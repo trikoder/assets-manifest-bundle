@@ -1,0 +1,30 @@
+### OS generated files ###
+
+# Linux
+*~
+
+# MacOS
+.DS_Store
+
+### IDEs ###
+
+# NetBeans
+/nbproject/
+
+# PhpStorm
+/.idea/
+
+# Sublime
+*.sublime*
+
+### VCS ###
+
+# Git
+*.orig
+
+# SVN
+.svn/
+
+### Bundle ###
+/vendor/
+composer.lock

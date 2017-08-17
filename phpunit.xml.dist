@@ -1,0 +1,21 @@
+<phpunit
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    verbose="true"
+    colors="true"
+>
+<testsuites>
+<testsuite name="tests">
+<directory>./Tests</directory>
+</testsuite>
+</testsuites>
+<filter>
+<whitelist>
+<directory suffix=".php">./Service</directory>
+<directory suffix=".php">./Twig</directory>
+</whitelist>
+</filter>
+
+
+</phpunit>
