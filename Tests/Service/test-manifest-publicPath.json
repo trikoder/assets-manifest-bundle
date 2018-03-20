@@ -1,0 +1,7 @@
+{
+  "version": "0.0.0",
+  "buildPath": "dev/",
+  "srcPath": "./Resources/src/",
+  "distPath": "./Resources/public/dev/",
+  "publicPath": "https://www.google.com/images/dev/"
+}

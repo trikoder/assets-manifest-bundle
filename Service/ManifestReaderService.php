@@ -4,6 +4,7 @@ namespace Trikoder\ManifestAssetBundle\Service;
 
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Twig_Loader_Filesystem;
 
 class ManifestReaderService
 {
@@ -13,6 +14,9 @@ class ManifestReaderService
     /** @var  KernelInterface $kernel */
     protected $kernel;
 
+    /** @var  Twig_Loader_Filesystem $twigLoaderFilesystem */
+    protected $twigLoaderFilesystem;
+
     /** @var string $manifestFileName */
     protected $manifestFileName;
 
@@ -21,39 +25,51 @@ class ManifestReaderService
      * @param KernelInterface $kernel
      * @param string $manifestFileName
      */
-    public function __construct(KernelInterface $kernel, $manifestFileName = 'asset-manifest.json')
+    public function __construct(KernelInterface $kernel, Twig_Loader_Filesystem $twigLoaderFilesystem, $manifestFileName = 'asset-manifest.json')
     {
         $this->kernel = $kernel;
+        $this->twigLoaderFilesystem = $twigLoaderFilesystem;
         $this->manifestFileName = $manifestFileName;
     }
 
     /**
-     * @param $bundleRef
+     * @param $reference
      * @return mixed
      */
-    public function getBundleManifest($bundleRef)
+    public function getManifest($reference)
     {
-        if (false === array_key_exists($bundleRef, $this->manifestRegistry)) {
-            $this->loadBundleManifest($bundleRef);
+        if (false === array_key_exists($reference, $this->manifestRegistry)) {
+            $this->loadManifest($reference);
         }
 
-        return $this->manifestRegistry[$bundleRef];
+        return $this->manifestRegistry[$reference];
     }
 
     /**
-     * @param $bundleRef
+     * @param $reference
      * @return mixed
      */
-    protected function loadBundleManifest($bundleRef)
+    protected function loadManifest($reference)
     {
-        // try to locate file
-        try {
-            $manifestPath = $this->kernel->locateResource("{$bundleRef}/{$this->manifestFileName}", null, true);
-        } catch (InvalidArgumentException $exception) {
+        $assetRoot = null;
+        $manifestPath = null;
+
+        // Bundle reference
+        if (preg_match('/^@((\w+)Bundle)/', $reference, $matches)) {
+            $manifestPath = $this->getManifestPathFromBundle($reference, $this->manifestFileName);
+            $assetRoot = 'bundles/' . strtolower($matches[2]) . '/';
+        }
+
+        // Twig namespace reference
+        else if (preg_match('/^@(\w+)/', $reference, $matches)) {
+            $manifestPath = $this->getManifestPathFromTwigNamespace($reference, $this->manifestFileName);
+            $assetRoot = strtolower($matches[1]) . '/';
+        }
+
+        // Invalid reference
+        else {
             throw new InvalidArgumentException(
-                sprintf('Manifest file for bundle %s does not exist', $bundleRef),
-                0,
-                $exception
+                sprintf('Invalid reference format for %s.', $reference)
             );
         }
 
@@ -65,7 +81,7 @@ class ManifestReaderService
             throw new InvalidArgumentException(
                 sprintf(
                     'Manifest file %1$s/%2$s does not have valid contents',
-                    $bundleRef,
+                    $reference,
                     $this->manifestFileName
                 )
             );
@@ -73,22 +89,46 @@ class ManifestReaderService
 
         // TODO validate manifest has right structure
 
-        // to speed up process we cache resolve the root of the bundle
-        $manifest['root'] = $this->resolveBundleAssetRoot($bundleRef);
+        // to speed up process we cache resolve the root of the bundle/twig namespace
+        $manifest['root'] = $assetRoot;
 
         // save it in registry and return the value
-        return $this->manifestRegistry[$bundleRef] = $manifest;
+        return $this->manifestRegistry[$reference] = $manifest;
     }
 
     /**
-     * @param $bundleRef
+     * @param $reference
+     * @param $manifestFileName
      * @return string
      */
-    protected function resolveBundleAssetRoot($bundleRef)
+    protected function getManifestPathFromBundle($reference, $manifestFileName)
     {
-        // all to lovercase and remove @ at start and bundle keyword fron the end
-        $bundleDir = substr(strtolower($bundleRef), 1, -6);
+        try {
+            return $this->kernel->locateResource("{$reference}/{$manifestFileName}", null, true);
+        } catch (InvalidArgumentException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Manifest file for bundle %s does not exist.', $reference),
+                0,
+                $exception
+            );
+        }
+    }
 
-        return "bundles/{$bundleDir}/";
+    /**
+     * @param $reference
+     * @param $manifestFileName
+     * @return string
+     */
+    protected function getManifestPathFromTwigNamespace($reference, $manifestFileName)
+    {
+        $projectRoot = realpath($this->kernel->getRootDir() . '/..') . '/';
+
+        if (true === $this->twigLoaderFilesystem->exists("{$reference}/{$manifestFileName}")) {
+            return $projectRoot . $this->twigLoaderFilesystem->getCacheKey("{$reference}/{$manifestFileName}");
+        }
+
+        throw new InvalidArgumentException(
+            sprintf('Manifest file for twig namespace %s does not exist.', $reference)
+        );
     }
 }

@@ -9,8 +9,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-* mainfest file generator
 
+## v1.0
+
+### Added
+
+* support for twig namespaces when linking manifest
+
+### Changed
+
+* [BC break] some of internal public interfaces have changed:
+    - ManifestReaderService::getBundleManifest => ManifestReaderService::getManifest
+* internal refactorings to support Twig namespaces
+
+## v0.6
+
+### Added
+
+* support publicPath proprety in manifest file:
+    * If manifest file contains proprety "publicPath" it's value is always used for generating URLs for assets
+    * This isn't used for inline assets, it always includes assets from local filesystem
+* Added LICENCE
 
 ## v0.5
 

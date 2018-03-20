@@ -6,9 +6,20 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Trikoder\ManifestAssetBundle\Service\ManifestReaderService;
+use Twig_Loader_Filesystem;
 
 class ManifestReaderServiceTest extends TestCase
 {
+    /**
+     * @var Twig_Loader_Filesystem $twigLoaderFilesystem
+     */
+    protected $twigLoaderFilesystem;
+
+    protected function setUp()
+    {
+        $this->twigLoaderFilesystem = new Twig_Loader_Filesystem();
+        $this->twigLoaderFilesystem->addPath('./Tests/Service', 'TestNamespace');
+    }
 
     /**
      * @test
@@ -18,10 +29,11 @@ class ManifestReaderServiceTest extends TestCase
         $kernelMock = $this->getMockBuilder(KernelInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $kernelMock->method('locateResource')->willReturn(realpath(__DIR__.'/test-manifest.json'));
-        $service = new ManifestReaderService($kernelMock);
 
-        $result = $service->getBundleManifest('test');
+        $kernelMock->method('locateResource')->willReturn(realpath(__DIR__.'/test-manifest.json'));
+
+        $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
+        $result = $service->getManifest('@TrikoderManifestAssetBundle');
 
         $this->assertTrue(is_array($result));
 
@@ -35,20 +47,52 @@ class ManifestReaderServiceTest extends TestCase
 
     /**
      * @test
-     *
      */
-    public function invalidManifestFile()
+    public function validateManifestLoadingFromTwigNamespace()
+    {
+        $kernelMock = $this->getMockBuilder(KernelInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $kernelMock->method('getRootDir')
+            ->willReturn(realpath(__DIR__.'/../'));
+
+        $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
+
+        $result = $service->getManifest('@TestNamespace');
+        $this->assertTrue(is_array($result));
+    }
+
+    /**
+     * @test
+     */
+    public function invalidManifestFileFromBundle()
     {
         $kernelMock = $this->getMockBuilder(KernelInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $kernelMock->method('locateResource')->will($this->throwException(new InvalidArgumentException()));
-        $service = new ManifestReaderService($kernelMock);
+        $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Manifest file for bundle test does not exist');
+        $this->expectExceptionMessageRegExp('/^Manifest file .* does not exist/');
 
+        $result = $service->getManifest('@TrikoderManifestAssetBundle');
+    }
 
-        $result = $service->getBundleManifest('test');
+    /**
+     * @test
+     */
+    public function invalidManifestFileFromTwigNamespace()
+    {
+        $kernelMock = $this->getMockBuilder(KernelInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageRegExp('/^Manifest file .* does not exist/');
+
+        $result = $service->getManifest('@TestNamespace');
     }
 }

@@ -7,4 +7,4 @@ services:
 
     trikoder_manifest_asset.manifest_reader:
         class: Trikoder\ManifestAssetBundle\Service\ManifestReaderService
-        arguments: ["@kernel"]
+        arguments: ["@kernel", "@twig.loader.filesystem"]
