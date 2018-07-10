@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+BASE_DIR=$(cd "$(dirname "$0")"; pwd)
+
+${BASE_DIR}/php php-cs-fixer -v --diff --ansi "$@"

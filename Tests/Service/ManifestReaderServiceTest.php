@@ -11,7 +11,7 @@ use Twig_Loader_Filesystem;
 class ManifestReaderServiceTest extends TestCase
 {
     /**
-     * @var Twig_Loader_Filesystem $twigLoaderFilesystem
+     * @var Twig_Loader_Filesystem
      */
     protected $twigLoaderFilesystem;
 
@@ -30,7 +30,7 @@ class ManifestReaderServiceTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $kernelMock->method('locateResource')->willReturn(realpath(__DIR__.'/test-manifest.json'));
+        $kernelMock->method('locateResource')->willReturn(realpath(__DIR__ . '/test-manifest.json'));
 
         $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
         $result = $service->getManifest('@TrikoderManifestAssetBundle');
@@ -55,7 +55,7 @@ class ManifestReaderServiceTest extends TestCase
             ->getMock();
 
         $kernelMock->method('getRootDir')
-            ->willReturn(realpath(__DIR__.'/../'));
+            ->willReturn(realpath(__DIR__ . '/../'));
 
         $service = new ManifestReaderService($kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
 

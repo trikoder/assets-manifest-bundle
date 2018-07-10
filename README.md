@@ -52,6 +52,30 @@ Then, you can use :
 Note: Twig namespace references does not contain separator `:` like bundles. See [this link](https://symfony.com/doc/current/templating/namespaced_paths.html) for more details.
 
 
+## Running tests and linter
+
+For running tests and linter, there is a complete docker enviroment with php and all required tools.
+To setup environment use:
+
+```
+bin/dev/docker-compose build
+bin/dev/composer install
+```
+
+To run tests (after environment is built):
+
+```
+bin/dev/composer test
+```
+
+To run linter:
+
+```
+bin/dev/phpcsfixer fix --dry-run .
+```
+To automaticaly fix coding standards, just ommit `--dry-run` parameter.
+
+
 
 ## Credits
 

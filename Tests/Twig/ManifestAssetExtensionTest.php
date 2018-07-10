@@ -3,21 +3,21 @@
 namespace Tests\Twig;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Trikoder\ManifestAssetBundle\Twig\ManifestAssetExtension;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Trikoder\ManifestAssetBundle\Service\ManifestReaderService;
+use Trikoder\ManifestAssetBundle\Twig\ManifestAssetExtension;
 use Twig_Loader_Filesystem;
 
 class ManifestAssetExtensionTest extends TestCase
 {
     /**
-     * @var KernelInterface $kernelMock
+     * @var KernelInterface
      */
     private $kernelMock;
 
     /**
-     * @var Twig_Loader_Filesystem $twigLoaderFilesystem
+     * @var Twig_Loader_Filesystem
      */
     protected $twigLoaderFilesystem;
 
@@ -27,7 +27,7 @@ class ManifestAssetExtensionTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->kernelMock->method('getRootDir')->willReturn(realpath(__DIR__.'/../'));
+        $this->kernelMock->method('getRootDir')->willReturn(realpath(__DIR__ . '/../'));
         $this->twigLoaderFilesystem = new Twig_Loader_Filesystem();
         $this->twigLoaderFilesystem->addPath('./Tests/Service', 'TestNamespace');
     }
@@ -37,20 +37,20 @@ class ManifestAssetExtensionTest extends TestCase
         $this->kernelMock->expects($this->any())
             ->method('locateResource')
             ->will($this->returnCallback(function (...$args) {
-                if ($args[0] === '@TrikoderManifestAssetBundle/test-manifest.json') {
-                    return realpath(__DIR__ .'/../Service/test-manifest.json');
+                if ('@TrikoderManifestAssetBundle/test-manifest.json' === $args[0]) {
+                    return realpath(__DIR__ . '/../Service/test-manifest.json');
                 }
             }));
 
         $service = new ManifestReaderService($this->kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
         $requestStack = new RequestStack();
-        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__.'/../public');
+        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__ . '/../public');
 
-        $this->assertSame('This is Sparta.', $extension->manifestAssetInlineFilter("@TrikoderManifestAssetBundle:test.txt"));
-        $this->assertSame('This is Sparta.', $extension->manifestAssetInlineFilter("@TestNamespace/test.txt"));
+        $this->assertSame('This is Sparta.', $extension->manifestAssetInlineFilter('@TrikoderManifestAssetBundle:test.txt'));
+        $this->assertSame('This is Sparta.', $extension->manifestAssetInlineFilter('@TestNamespace/test.txt'));
 
-        $this->assertSame('/bundles/trikodermanifestasset/dev/test.txt', $extension->manifestAssetFilter("@TrikoderManifestAssetBundle:test.txt"));
-        $this->assertSame('/testnamespace/dev/test.txt', $extension->manifestAssetFilter("@TestNamespace/test.txt"));
+        $this->assertSame('/bundles/trikodermanifestasset/dev/test.txt', $extension->manifestAssetFilter('@TrikoderManifestAssetBundle:test.txt'));
+        $this->assertSame('/testnamespace/dev/test.txt', $extension->manifestAssetFilter('@TestNamespace/test.txt'));
     }
 
     public function testExceptionIsThrownIfFileDoesNotExist()
@@ -58,17 +58,17 @@ class ManifestAssetExtensionTest extends TestCase
         $this->kernelMock->expects($this->any())
             ->method('locateResource')
             ->will($this->returnCallback(function (...$args) {
-                if ($args[0] === '@TrikoderManifestAssetBundle/test-manifest.json') {
-                    return realpath(__DIR__ .'/../Service/test-manifest.json');
+                if ('@TrikoderManifestAssetBundle/test-manifest.json' === $args[0]) {
+                    return realpath(__DIR__ . '/../Service/test-manifest.json');
                 }
             }));
 
         $service = new ManifestReaderService($this->kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
         $requestStack = new RequestStack();
-        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__.'/../public');
+        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__ . '/../public');
 
         $this->expectException(\InvalidArgumentException::class);
-        $extension->manifestAssetInlineFilter("@TrikoderManifestAssetBundle:doesNotExist.css");
+        $extension->manifestAssetInlineFilter('@TrikoderManifestAssetBundle:doesNotExist.css');
     }
 
     /**
@@ -79,24 +79,25 @@ class ManifestAssetExtensionTest extends TestCase
         $this->kernelMock->expects($this->any())
             ->method('locateResource')
             ->will($this->returnCallback(function (...$args) {
-                if ($args[0] === '@TrikoderManifestAssetBundle/test-manifest.json') {
-                    return realpath(__DIR__ .'/../Service/test-manifest-publicPath.json');
+                if ('@TrikoderManifestAssetBundle/test-manifest.json' === $args[0]) {
+                    return realpath(__DIR__ . '/../Service/test-manifest-publicPath.json');
                 }
             }));
 
-        $service = new ManifestReaderService($this->kernelMock,  $this->twigLoaderFilesystem, 'test-manifest.json');
+        $service = new ManifestReaderService($this->kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
         $requestStack = new RequestStack();
-        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__.'/../public');
+        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__ . '/../public');
 
-        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter("@TrikoderManifestAssetBundle:test.txt"));
-        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter("@TrikoderManifestAssetBundle:test.txt", ['absolute' => true]));
+        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter('@TrikoderManifestAssetBundle:test.txt'));
+        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter('@TrikoderManifestAssetBundle:test.txt', ['absolute' => true]));
 
-        # Now, test it with twig namespace
-        $service = new ManifestReaderService($this->kernelMock,  $this->twigLoaderFilesystem, 'test-manifest-publicPath.json');
-        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__.'/../public');
-        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter("@TestNamespace/test.txt"));
-        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter("@TestNamespace/test.txt", ['absolute' => true]));
+        // Now, test it with twig namespace
+        $service = new ManifestReaderService($this->kernelMock, $this->twigLoaderFilesystem, 'test-manifest-publicPath.json');
+        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__ . '/../public');
+        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter('@TestNamespace/test.txt'));
+        $this->assertEquals('https://www.google.com/images/dev/test.txt', $extension->manifestAssetFilter('@TestNamespace/test.txt', ['absolute' => true]));
     }
+
     /**
      * @test
      */
@@ -105,16 +106,16 @@ class ManifestAssetExtensionTest extends TestCase
         $this->kernelMock->expects($this->any())
             ->method('locateResource')
             ->will($this->returnCallback(function (...$args) {
-                if ($args[0] === '@TrikoderManifestAssetBundle/test-manifest.json') {
-                    return realpath(__DIR__ .'/../Service/test-manifest-publicPath.json');
+                if ('@TrikoderManifestAssetBundle/test-manifest.json' === $args[0]) {
+                    return realpath(__DIR__ . '/../Service/test-manifest-publicPath.json');
                 }
             }));
 
         $service = new ManifestReaderService($this->kernelMock, $this->twigLoaderFilesystem, 'test-manifest.json');
         $requestStack = new RequestStack();
-        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__.'/../public');
+        $extension = new ManifestAssetExtension($service, $requestStack, __DIR__ . '/../public');
 
-        $this->assertEquals('This is Sparta.', $extension->manifestAssetInlineFilter("@TrikoderManifestAssetBundle:test.txt"));
-        $this->assertEquals('This is Sparta.', $extension->manifestAssetInlineFilter("@TestNamespace/test.txt"));
+        $this->assertEquals('This is Sparta.', $extension->manifestAssetInlineFilter('@TrikoderManifestAssetBundle:test.txt'));
+        $this->assertEquals('This is Sparta.', $extension->manifestAssetInlineFilter('@TestNamespace/test.txt'));
     }
 }

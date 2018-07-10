@@ -3,38 +3,36 @@
 namespace Trikoder\ManifestAssetBundle\Twig;
 
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Trikoder\ManifestAssetBundle\Service\ManifestReaderService;
 use Twig_Extension;
 use Twig_SimpleFunction;
 
 /**
  * Class ManifestAssetExtension
- * @package Trikoder\ManifestAssetBundle\Twig
  */
 class ManifestAssetExtension extends Twig_Extension
 {
     /**
-     * @var ManifestReaderService $readerService
+     * @var ManifestReaderService
      */
     private $readerService;
 
     /**
-     * @var string $documentRoot
+     * @var string
      */
     private $documentRoot;
 
     /**
-     * @var RequestStack $requestStack
+     * @var RequestStack
      */
     private $requestStack;
 
     /**
-     * @var string $webDir
+     * @var string
      */
     private $webDir;
-
 
     /**
      * @param ManifestReaderService $readerService
@@ -44,7 +42,7 @@ class ManifestAssetExtension extends Twig_Extension
     public function __construct(ManifestReaderService $readerService, RequestStack $requestStack, $webDir)
     {
         $this->readerService = $readerService;
-        $this->documentRoot = "/";
+        $this->documentRoot = '/';
         $this->requestStack = $requestStack;
         $this->webDir = $webDir;
     }
@@ -73,11 +71,11 @@ class ManifestAssetExtension extends Twig_Extension
     public function manifestAssetFilter($shorthand, array $options = [])
     {
         // get bundle and suffix from shorthand
-        list($reference, $asset) = $this->getReferenceAndAssetFromShorthand($shorthand);
+        [$reference, $asset] = $this->getReferenceAndAssetFromShorthand($shorthand);
 
         // TODO - check if both values are ok
 
-        $abs = (array_key_exists('absolute', $options) && $options['absolute']) === true;
+        $abs = true === (array_key_exists('absolute', $options) && $options['absolute']);
 
         // load manifest
         $manifest = $this->getManifest($reference);
@@ -88,6 +86,7 @@ class ManifestAssetExtension extends Twig_Extension
 
     /**
      * @param string $shorthand
+     *
      * @return string
      */
     public function manifestAssetInlineFilter($shorthand)
@@ -97,6 +96,7 @@ class ManifestAssetExtension extends Twig_Extension
 
     /**
      * @param string $shorthand
+     *
      * @return mixed
      */
     private function getReferenceAndAssetFromShorthand($shorthand)
@@ -116,6 +116,7 @@ class ManifestAssetExtension extends Twig_Extension
 
     /**
      * @param string $reference
+     *
      * @return mixed
      */
     private function getManifest($reference)
@@ -125,6 +126,7 @@ class ManifestAssetExtension extends Twig_Extension
 
     /**
      * Generate absolute route prefix for current request
+     *
      * @return string
      */
     private function generateAbsolutePrefix()
@@ -136,12 +138,12 @@ class ManifestAssetExtension extends Twig_Extension
         $host = $req->getHost();
         $port = '';
         if ('http' === $scheme && 80 != $req->getPort()) {
-            $port = ':'.$req->getPort();
+            $port = ':' . $req->getPort();
         } elseif ('https' === $scheme && 443 != $req->getPort()) {
-            $port = ':'.$req->getPort();
+            $port = ':' . $req->getPort();
         }
         $schemeAuthority = "$scheme://";
-        $schemeAuthority .= $host.$port;
+        $schemeAuthority .= $host . $port;
 
         return $schemeAuthority;
     }
@@ -150,15 +152,16 @@ class ManifestAssetExtension extends Twig_Extension
      * @param array $manifest
      * @param string $asset
      * @param bool $absolute
+     *
      * @return string
      */
     private function getAssetUri($manifest, $asset, $absolute)
     {
         if (array_key_exists('publicPath', $manifest)) {
-            return $manifest['publicPath'].$asset;
+            return $manifest['publicPath'] . $asset;
         }
 
-        $path = $this->documentRoot. $manifest['root'] . $manifest['buildPath'] . $asset;
+        $path = $this->documentRoot . $manifest['root'] . $manifest['buildPath'] . $asset;
         if (true === $absolute) {
             return $this->generateAbsolutePrefix() . $path;
         }
@@ -168,13 +171,15 @@ class ManifestAssetExtension extends Twig_Extension
 
     /**
      * @param string $shorthand
+     *
      * @throws \InvalidArgumentException if the file cannot be found or the name is not valid
+     *
      * @return string
      */
     private function getFilePath($shorthand)
     {
         // get reference and suffix from shorthand
-        list($reference, $asset) = $this->getReferenceAndAssetFromShorthand($shorthand);
+        [$reference, $asset] = $this->getReferenceAndAssetFromShorthand($shorthand);
 
         // load manifest
         $manifest = $this->getManifest($reference);

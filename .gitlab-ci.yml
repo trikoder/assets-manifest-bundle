@@ -1,0 +1,26 @@
+stages:
+  - test
+  - lint
+
+before_script:
+  - source bin/gitlab/prepare.sh
+
+after_script:
+  - source bin/gitlab/stop.sh
+
+test:
+  stage: test
+  tags:
+    - shell
+    - docker-compose
+  script:
+    - rm -f composer.lock
+    - bin/dev/composer install --no-interaction --no-ansi --prefer-dist
+    - bin/dev/php vendor/bin/phpunit --debug --colors=never --coverage-text=php://stdout --coverage-html=logs/coverage
+lint:
+  stage: lint
+  tags:
+    - shell
+    - docker-compose
+  script:
+    - bin/dev/phpcsfixer fix --dry-run --using-cache=no .

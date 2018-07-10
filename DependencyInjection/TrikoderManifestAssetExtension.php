@@ -2,16 +2,15 @@
 
 namespace Trikoder\ManifestAssetBundle\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
  * This is the class that loads and manages your bundle configuration.
  *
- * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
+ * @see http://symfony.com/doc/current/cookbook/bundles/extension.html
  */
 class TrikoderManifestAssetExtension extends Extension
 {
@@ -25,7 +24,7 @@ class TrikoderManifestAssetExtension extends Extension
         $rootPath = $container->getParameter('kernel.root_dir');
         $container->setParameter('trikoder_manifest_asset.web_path',
             realpath($rootPath . '/../' . $config['web_dir']));
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
     }
 }

@@ -11,10 +11,10 @@ class ManifestReaderService
     /** @var $manifest array */
     protected $manifestRegistry = [];
 
-    /** @var  KernelInterface $kernel */
+    /** @var KernelInterface $kernel */
     protected $kernel;
 
-    /** @var  Twig_Loader_Filesystem $twigLoaderFilesystem */
+    /** @var Twig_Loader_Filesystem $twigLoaderFilesystem */
     protected $twigLoaderFilesystem;
 
     /** @var string $manifestFileName */
@@ -22,6 +22,7 @@ class ManifestReaderService
 
     /**
      * ManifestReaderService constructor.
+     *
      * @param KernelInterface $kernel
      * @param string $manifestFileName
      */
@@ -34,6 +35,7 @@ class ManifestReaderService
 
     /**
      * @param $reference
+     *
      * @return mixed
      */
     public function getManifest($reference)
@@ -47,6 +49,7 @@ class ManifestReaderService
 
     /**
      * @param $reference
+     *
      * @return mixed
      */
     protected function loadManifest($reference)
@@ -61,7 +64,7 @@ class ManifestReaderService
         }
 
         // Twig namespace reference
-        else if (preg_match('/^@(\w+)/', $reference, $matches)) {
+        elseif (preg_match('/^@(\w+)/', $reference, $matches)) {
             $manifestPath = $this->getManifestPathFromTwigNamespace($reference, $this->manifestFileName);
             $assetRoot = strtolower($matches[1]) . '/';
         }
@@ -77,10 +80,10 @@ class ManifestReaderService
         $manifest = json_decode(file_get_contents($manifestPath), true);
 
         // check if we got contents
-        if (true === is_null($manifest)) {
+        if (null === $manifest) {
             throw new InvalidArgumentException(
                 sprintf(
-                    'Manifest file %1$s/%2$s does not have valid contents',
+                    'Manifest file %1$s/%2$s does not have valid content!',
                     $reference,
                     $this->manifestFileName
                 )
@@ -99,6 +102,7 @@ class ManifestReaderService
     /**
      * @param $reference
      * @param $manifestFileName
+     *
      * @return string
      */
     protected function getManifestPathFromBundle($reference, $manifestFileName)
@@ -117,6 +121,7 @@ class ManifestReaderService
     /**
      * @param $reference
      * @param $manifestFileName
+     *
      * @return string
      */
     protected function getManifestPathFromTwigNamespace($reference, $manifestFileName)
