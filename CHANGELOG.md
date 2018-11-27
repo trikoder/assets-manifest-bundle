@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+## v1.0.1
+
+### Added
+
+* increase range Symfony components
+
+### Changed
+
+* increase range for current Symfony components (>=2.7 <=5.0)
 
 ## v1.0
 
